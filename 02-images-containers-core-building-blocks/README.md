@@ -44,11 +44,47 @@ This is the most important conceptual point of the module:
 - Multiple containers can run from the **same** image without duplicating the underlying code/environment for each one - Docker reuses the image's layers across all containers built from it. This is what makes containers lightweight compared to VMs.
 - Bottom line: Docker is fundamentally about **containers** (that's what runs your app) - images just exist to make containers possible and reproducible.
 
-## Key commands recap
+## CMD is special
 
+Unlike the other Dockerfile instructions (`FROM`, `WORKDIR`, `COPY`, `RUN`), `CMD` is **not** executed while the image is being built. It only runs later, when a container is created and started from that image (`docker run`). Every other instruction contributes to building the image itself; `CMD` just records what should happen at container start-up.
+
+## Key Docker commands (cheat sheet)
+
+For the full list of options for any command, append `--help` (e.g. `docker run --help`). Full reference: https://docs.docker.com/engine/reference/run/ - in practice you'll only ever need a handful of these regularly.
+
+**Building & tagging images**
 ```bash
-docker build .                        # build a custom image from a Dockerfile
-docker run -p <host_port>:<container_port> <image_id>   # run a container from an image
-docker ps                             # list running containers
-docker stop <container_id_or_name>    # stop a running container
+docker build .                     # build an image from the Dockerfile in the current folder
+docker build -t name:tag .         # build and assign it a readable name + tag (instead of a random ID)
+```
+
+**Running containers**
+```bash
+docker run IMAGE                   # create + start a new container from an image (name or ID)
+docker run --name my-container IMAGE   # give the container a name, used later to stop/remove it
+docker run -d IMAGE                # detached mode: container runs in the background, terminal isn't blocked
+docker run -it IMAGE               # interactive mode: container can receive input from the terminal (Ctrl+C to stop)
+docker run --rm IMAGE              # automatically remove the container once it stops
+```
+
+**Inspecting**
+```bash
+docker ps                          # list running containers
+docker ps -a                       # list all containers, including stopped ones
+docker images                      # list all locally stored images
+```
+
+**Removing**
+```bash
+docker rm CONTAINER                 # remove a (stopped) container, by name or ID
+docker rmi IMAGE                    # remove an image, by name or ID
+docker container prune               # remove all stopped containers at once
+docker image prune                   # remove all dangling (untagged) images
+docker image prune -a                # remove all unused images, not just dangling ones
+```
+
+**Sharing images**
+```bash
+docker push IMAGE     # upload an image to Docker Hub (or another registry) - the name/tag must include the repository path
+docker pull IMAGE     # download an image from Docker Hub - happens automatically on `docker run` if not already pulled
 ```
